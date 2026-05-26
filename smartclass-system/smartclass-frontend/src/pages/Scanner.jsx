@@ -1,4 +1,3 @@
-// src/pages/Scanner.jsx — real camera QR scanner
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -127,7 +126,7 @@ export default function Scanner() {
             isNew: true,
           }))
         );
-        setInfo('Attendance recorded ✓');
+        setInfo('Attendance recorded');
       }
     } catch (e) {
       setError(e.message);
@@ -153,7 +152,7 @@ export default function Scanner() {
       <SectionHeader
         eyebrow={`QR Attendance · ${activeSection?.code} · ${activeSection?.subject}`}
         title="Live attendance scanner"
-        sub="Each scan is timestamped, deduplicated, and synced to the gradebook in real time."
+        sub="Scan student QR codes to mark attendance."
         action={
           sections.length > 1 && (
             <select

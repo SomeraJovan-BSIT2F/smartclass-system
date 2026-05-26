@@ -1,15 +1,14 @@
-// src/pages/Landing.jsx — public marketing/welcome page
 import { Link } from 'react-router-dom';
 import {
-  QrCode, Camera, BarChart3, Mail, ShieldCheck, Eye, Users,
-  ArrowRight, CheckCircle2, BookOpen, GraduationCap, Sparkles,
-  Clock, FileText, Zap,
+  QrCode, Camera, BarChart3, Mail, ShieldCheck, Users,
+  ArrowRight, CheckCircle2, BookOpen, GraduationCap,
+  FileText,
 } from 'lucide-react';
 
 export default function Landing() {
   return (
     <div style={{ background: 'var(--paper)', color: 'var(--ink)' }}>
-      {/* ─── Top bar ───────────────────────────────────────────────── */}
+      {/* Top bar */}
       <header
         className="sticky top-0 z-30 border-b backdrop-blur-md"
         style={{ background: 'rgba(250,247,242,0.85)', borderColor: 'var(--rule)' }}
@@ -22,23 +21,15 @@ export default function Landing() {
             >
               <QrCode size={16} />
             </div>
-            <div className="leading-tight">
-              <div className="font-serif text-[17px] tracking-tight">
-                SmartClass <span style={{ color: 'var(--accent)' }}>QR</span>
-              </div>
-              <div
-                className="text-[10px] uppercase tracking-[0.18em]"
-                style={{ color: 'var(--muted)' }}
-              >
-                Classroom Intelligence
-              </div>
+            <div className="font-serif text-[17px] tracking-tight">
+              SmartClass <span style={{ color: 'var(--accent)' }}>QR</span>
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-7 text-sm">
             <a href="#features" className="hover:opacity-70 transition">Features</a>
             <a href="#how" className="hover:opacity-70 transition">How it works</a>
-            <a href="#roles" className="hover:opacity-70 transition">For schools</a>
+            <a href="#roles" className="hover:opacity-70 transition">Roles</a>
             <a href="#about" className="hover:opacity-70 transition">About</a>
           </nav>
 
@@ -56,7 +47,7 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* ─── Hero ──────────────────────────────────────────────────── */}
+      {/* Hero */}
       <section className="relative overflow-hidden border-b" style={{ borderColor: 'var(--rule)' }}>
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -69,22 +60,16 @@ export default function Landing() {
         />
         <div className="relative mx-auto max-w-[1200px] px-6 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[11px] uppercase tracking-[0.18em]"
-              style={{ borderColor: 'var(--rule)', color: 'var(--accent)' }}
-            >
-              <Sparkles size={11} /> Volume I · Edition 2025
-            </div>
-            <h1 className="font-serif text-5xl lg:text-7xl mt-5 leading-[1.02] tracking-tight">
-              The end of the <em>paper roster</em>.
+            <h1 className="font-serif text-5xl lg:text-7xl leading-[1.02] tracking-tight">
+              QR-based attendance for the classroom.
             </h1>
             <p
               className="mt-6 text-base lg:text-lg max-w-xl leading-relaxed"
               style={{ color: 'var(--muted)' }}
             >
-              SmartClass QR is an intelligent classroom management platform that
-              turns daily attendance into instant insight — and gives teachers
-              the time back to teach.
+              SmartClass QR is a web system for managing class attendance, grades, and
+              excuse letters. Each student gets a personal QR code that the teacher
+              scans at the start of class.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -96,7 +81,7 @@ export default function Landing() {
                   borderColor: 'var(--accent)',
                 }}
               >
-                Sign in to your account <ArrowRight size={14} />
+                Sign in <ArrowRight size={14} />
               </Link>
               <a
                 href="#how"
@@ -105,20 +90,6 @@ export default function Landing() {
               >
                 See how it works
               </a>
-            </div>
-            <div
-              className="mt-8 flex items-center gap-5 text-xs"
-              style={{ color: 'var(--muted)' }}
-            >
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck size={13} /> JWT secured
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Eye size={13} /> WCAG 2.1 AA
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Zap size={13} /> Realtime sync
-              </div>
             </div>
           </div>
 
@@ -192,7 +163,7 @@ export default function Landing() {
                       className="text-xs mt-1"
                       style={{ color: 'var(--ok)' }}
                     >
-                      ↑ 4 from last session
+                      +4 from last session
                     </div>
                   </div>
                   <div className="space-y-1.5 mt-3">
@@ -226,46 +197,18 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Stats strip ───────────────────────────────────────────── */}
-      <section className="border-b" style={{ borderColor: 'var(--rule)' }}>
-        <div className="mx-auto max-w-[1200px] px-6 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { v: '< 2s', l: 'per scan' },
-            { v: '0', l: 'paper rosters' },
-            { v: '14', l: 'database tables' },
-            { v: '100%', l: 'auditable' },
-          ].map((s) => (
-            <div key={s.l} className="text-center">
-              <div className="font-serif text-4xl lg:text-5xl">{s.v}</div>
-              <div
-                className="text-[11px] uppercase tracking-[0.18em] mt-1"
-                style={{ color: 'var(--muted)' }}
-              >
-                {s.l}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── Features ──────────────────────────────────────────────── */}
+      {/* Features */}
       <section id="features" className="border-b" style={{ borderColor: 'var(--rule)' }}>
         <div className="mx-auto max-w-[1200px] px-6 lg:px-8 py-20">
           <div className="max-w-2xl">
-            <div
-              className="text-[11px] uppercase tracking-[0.18em]"
-              style={{ color: 'var(--accent)' }}
-            >
-              Capabilities
-            </div>
-            <h2 className="font-serif text-4xl lg:text-5xl mt-3 leading-[1.05]">
-              Built for the way modern educators actually <em>work</em>.
+            <h2 className="font-serif text-4xl lg:text-5xl leading-[1.05]">
+              What it does.
             </h2>
             <p
               className="mt-4 text-base"
               style={{ color: 'var(--muted)' }}
             >
-              Every feature serves a single goal: less friction, more teaching.
+              The features below cover the main workflows for teachers, students, and admins.
             </p>
           </div>
 
@@ -273,33 +216,33 @@ export default function Landing() {
             {[
               {
                 icon: Camera,
-                title: 'Instant QR attendance',
-                desc: 'Open the camera, students tap their semester QR. Each scan is timestamped, deduplicated, and synced live.',
+                title: 'QR attendance',
+                desc: 'Teacher opens the camera and scans student QR codes. Each scan is timestamped and recorded.',
               },
               {
                 icon: BarChart3,
-                title: 'Live performance analytics',
-                desc: 'Charts that surface at-risk students automatically — by attendance, grade, or engagement signals.',
+                title: 'Analytics',
+                desc: 'Charts for attendance trends, class average, and a list of students who are falling behind.',
               },
               {
                 icon: Mail,
-                title: 'Excuse-letter workflow',
-                desc: 'Students upload supporting documents. Teachers approve or reject. Attendance updates automatically.',
+                title: 'Excuse letters',
+                desc: 'Students upload supporting documents. The teacher approves or rejects, then attendance updates.',
               },
               {
                 icon: FileText,
-                title: 'PDF reports on demand',
-                desc: 'Per-section attendance summaries and per-student performance reports — generated on the server in real time.',
+                title: 'PDF reports',
+                desc: 'Per-section attendance reports and per-student performance reports, downloadable from the dashboard.',
               },
               {
-                icon: Eye,
-                title: 'Accessibility first',
-                desc: 'WCAG 2.1 AA throughout: keyboard navigation, ARIA labels, font scaling, and a high-contrast mode for low-vision users.',
+                icon: BookOpen,
+                title: 'Gradebook and quizzes',
+                desc: 'Teachers create quizzes, file-upload tasks, or score items manually. Students see results once posted.',
               },
               {
-                icon: ShieldCheck,
-                title: 'Auditable by design',
-                desc: 'Every authentication, scan, and grade change is logged. Role-based access enforced top to bottom.',
+                icon: Users,
+                title: 'Three user roles',
+                desc: 'Admin, teacher, and student each see a different dashboard with the tools they actually need.',
               },
             ].map((f) => (
               <div
@@ -329,18 +272,12 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── How it works ──────────────────────────────────────────── */}
+      {/* How it works */}
       <section id="how" className="border-b" style={{ borderColor: 'var(--rule)' }}>
         <div className="mx-auto max-w-[1200px] px-6 lg:px-8 py-20">
           <div className="max-w-2xl">
-            <div
-              className="text-[11px] uppercase tracking-[0.18em]"
-              style={{ color: 'var(--accent)' }}
-            >
-              How it works
-            </div>
-            <h2 className="font-serif text-4xl lg:text-5xl mt-3 leading-[1.05]">
-              From login to insight — in three movements.
+            <h2 className="font-serif text-4xl lg:text-5xl leading-[1.05]">
+              How it works.
             </h2>
           </div>
 
@@ -348,18 +285,18 @@ export default function Landing() {
             {[
               {
                 n: '01',
-                title: 'Issue & distribute',
-                desc: 'Admins generate semester QRs in batches. Each student receives a unique, expiring code on their dashboard.',
+                title: 'Set up the semester',
+                desc: 'Admin creates the semester, adds sections, and issues QR codes to enrolled students.',
               },
               {
                 n: '02',
                 title: 'Scan in class',
-                desc: 'Teachers open the scanner. The camera reads each student\'s QR. The roster updates in real time.',
+                desc: 'Teacher opens the scanner and points the camera at each student\'s QR. Attendance is recorded.',
               },
               {
                 n: '03',
-                title: 'Analyze & export',
-                desc: 'Attendance, grades, and excuse letters flow into one dashboard. PDFs download with a single click.',
+                title: 'View results',
+                desc: 'Students see their attendance and grades. Teachers and admins can export PDF reports.',
               },
             ].map((step) => (
               <div key={step.n} className="relative">
@@ -382,18 +319,12 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── For roles ─────────────────────────────────────────────── */}
+      {/* Roles */}
       <section id="roles" className="border-b" style={{ borderColor: 'var(--rule)' }}>
         <div className="mx-auto max-w-[1200px] px-6 lg:px-8 py-20">
           <div className="max-w-2xl">
-            <div
-              className="text-[11px] uppercase tracking-[0.18em]"
-              style={{ color: 'var(--accent)' }}
-            >
-              For every role
-            </div>
-            <h2 className="font-serif text-4xl lg:text-5xl mt-3 leading-[1.05]">
-              One platform. <em>Three perspectives.</em>
+            <h2 className="font-serif text-4xl lg:text-5xl leading-[1.05]">
+              Three roles.
             </h2>
           </div>
 
@@ -401,35 +332,35 @@ export default function Landing() {
             {[
               {
                 icon: ShieldCheck,
-                role: 'Administrators',
-                desc: 'Manage users, sections, and semesters. Watch institution-wide trends and audit every change.',
+                role: 'Admin',
+                desc: 'Manages users, sections, semesters, and QR codes for the whole school.',
                 bullets: [
-                  'User management with role assignment',
-                  'Batch QR issuance per section',
-                  'Institution-wide attendance trends',
-                  'Full audit log of every action',
+                  'Create and archive semesters',
+                  'Add users and assign roles',
+                  'Issue QR codes per section',
+                  'Generate school-wide reports',
                 ],
               },
               {
                 icon: BookOpen,
-                role: 'Teachers',
-                desc: 'Track attendance in seconds, post grades, and review excuse letters — all from one dashboard.',
+                role: 'Teacher',
+                desc: 'Handles their own sections — attendance, grades, and excuse letter approvals.',
                 bullets: [
-                  'Live QR scanner with auto-roster',
-                  'Gradebook with weighted items',
-                  'Excuse-letter approval workflow',
-                  'PDF reports per section',
+                  'Scan QR codes for attendance',
+                  'Create quizzes and file tasks',
+                  'Approve or reject excuse letters',
+                  'Export PDFs per section',
                 ],
               },
               {
                 icon: GraduationCap,
-                role: 'Students',
-                desc: 'See your QR, your attendance, your grades, and submit excuses — without ever leaving the page.',
+                role: 'Student',
+                desc: 'Sees their personal QR, attendance history, tasks, and grades.',
                 bullets: [
                   'Personal semester QR code',
-                  'Real-time attendance & grades',
-                  'Online excuse-letter submission',
-                  'Downloadable performance report',
+                  'Attendance and grade history',
+                  'Submit excuse letters with files',
+                  'Take quizzes assigned by teachers',
                 ],
               },
             ].map((r) => (
@@ -472,27 +403,21 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── About ─────────────────────────────────────────────────── */}
+      {/* About */}
       <section id="about" className="border-b" style={{ borderColor: 'var(--rule)' }}>
         <div className="mx-auto max-w-[1200px] px-6 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div
-              className="text-[11px] uppercase tracking-[0.18em]"
-              style={{ color: 'var(--accent)' }}
-            >
-              About the project
-            </div>
-            <h2 className="font-serif text-4xl lg:text-5xl mt-3 leading-[1.05]">
-              An academic project, built like a product.
+            <h2 className="font-serif text-4xl lg:text-5xl leading-[1.05]">
+              About the project.
             </h2>
             <p
               className="mt-5 text-base leading-relaxed"
               style={{ color: 'var(--muted)' }}
             >
-              SmartClass QR is a complete classroom intelligence system spanning a
-              React frontend, a Node.js + Express API, and a MySQL database — designed
-              to demonstrate end-to-end software engineering: from authentication and
-              role-based access to real-time scanning and PDF reporting.
+              SmartClass QR is a capstone project. The frontend is built with React and
+              Vite, the backend uses Node.js with Express, and the data is stored in
+              MySQL. The goal was to replace the paper attendance sheets we still use
+              in some classes.
             </p>
             <div className="mt-7 grid grid-cols-2 gap-3 max-w-md">
               {[
@@ -501,7 +426,7 @@ export default function Landing() {
                 'MySQL 8',
                 'Tailwind CSS',
                 'JWT auth',
-                'WCAG 2.1 AA',
+                'PDFKit',
               ].map((t) => (
                 <div
                   key={t}
@@ -535,11 +460,9 @@ export default function Landing() {
               aria-hidden
             />
             <div className="relative">
-              <Clock size={20} />
-              <p className="font-serif text-2xl mt-5 leading-relaxed">
-                "We built this so a teacher walking into a classroom of forty
-                students could mark attendance, identify who's at risk, and
-                generate a report — all before the bell rings."
+              <p className="font-serif text-2xl mt-2 leading-relaxed">
+                The original idea: a teacher walks into a classroom of forty students,
+                marks attendance, and gets back to teaching — without the paper sheet.
               </p>
               <div className="mt-6 flex items-center gap-3">
                 <div
@@ -551,7 +474,7 @@ export default function Landing() {
                 <div>
                   <div className="text-sm">Project team</div>
                   <div
-                    className="text-xs opacity-60 uppercase tracking-wider"
+                    className="text-xs uppercase tracking-wider"
                     style={{ color: 'rgba(250,247,242,0.6)' }}
                   >
                     Capstone · 2025–2026
@@ -563,18 +486,17 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Final CTA ─────────────────────────────────────────────── */}
+      {/* Final CTA */}
       <section style={{ background: 'var(--cream)' }}>
         <div className="mx-auto max-w-[1200px] px-6 lg:px-8 py-20 text-center">
           <h2 className="font-serif text-4xl lg:text-6xl leading-[1.05]">
-            Ready when you are.
+            Sign in to get started.
           </h2>
           <p
             className="mt-4 text-base max-w-xl mx-auto"
             style={{ color: 'var(--muted)' }}
           >
-            Sign in with the credentials issued by your institution to access
-            your dashboard.
+            Use the account credentials given to you by the admin.
           </p>
           <Link
             to="/login"
@@ -590,7 +512,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Footer ────────────────────────────────────────────────── */}
+      {/* Footer */}
       <footer
         className="border-t"
         style={{ borderColor: 'var(--rule)', background: 'var(--paper)' }}
@@ -606,22 +528,13 @@ export default function Landing() {
             <span className="font-serif">
               SmartClass <span style={{ color: 'var(--accent)' }}>QR</span>
             </span>
-            <span
-              className="text-[11px] uppercase tracking-[0.14em] ml-2"
-              style={{ color: 'var(--muted)' }}
-            >
-              v1.0 · WCAG 2.1 AA
-            </span>
           </div>
 
           <div
-            className="flex gap-5 text-[11px] uppercase tracking-[0.14em]"
+            className="text-[11px] uppercase tracking-[0.14em]"
             style={{ color: 'var(--muted)' }}
           >
-            <a href="#" className="hover:underline">Privacy</a>
-            <a href="#" className="hover:underline">Terms</a>
-            <a href="#" className="hover:underline">Support</a>
-            <span>© 2025–2026</span>
+            © 2025–2026
           </div>
         </div>
       </footer>

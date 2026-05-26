@@ -1,4 +1,3 @@
-// src/pages/Reports.jsx
 import { useEffect, useState } from 'react';
 import { Download, FileText, BarChart3, TrendingUp, Plus } from 'lucide-react';
 import { api } from '../lib/api';
@@ -49,9 +48,8 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        eyebrow="Reports & exports"
-        title="Generated documents"
-        sub="Attendance, performance, and analytics — exported as PDF."
+                title="Generated documents"
+        sub="Download PDF reports."
       />
 
       {error && <ErrorBanner onClose={() => setError(null)}>{error}</ErrorBanner>}
@@ -77,6 +75,33 @@ export default function Reports() {
         </Card>
       ) : (
         <>
+          {user?.role === 'admin' && (
+            <Card className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-16 rounded grid place-items-center text-[10px] font-bold" style={{ background: 'var(--cream)' }}>PDF</div>
+                <div className="flex-1">
+                  <div className="font-serif text-xl">Institution-wide Report</div>
+                  <div className="text-sm" style={{ color: 'var(--muted)' }}>
+                    Aggregated attendance, sections, and at-risk students across the entire school.
+                  </div>
+                </div>
+                <Button
+                  variant="accent"
+                  loading={downloading === 'institution'}
+                  onClick={async () => {
+                    setDownloading('institution');
+                    try {
+                      await api.downloadPdf(api.institutionPdfUrl(), 'institution-report.pdf');
+                    } catch (e) { setError(e.message); }
+                    finally { setDownloading(null); }
+                  }}
+                >
+                  <Download size={14} aria-hidden="true" /> Download
+                </Button>
+              </div>
+            </Card>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {[
               { t: 'Attendance summary', d: 'Daily, weekly, or monthly', icon: FileText },
@@ -84,7 +109,7 @@ export default function Reports() {
               { t: 'Class analytics', d: 'Trends and comparisons', icon: TrendingUp },
             ].map((c) => (
               <Card key={c.t} className="p-5 hover:shadow-sm transition">
-                <c.icon size={20} style={{ color: 'var(--accent)' }} />
+                <c.icon size={20} style={{ color: 'var(--accent)' }} aria-hidden="true" />
                 <div className="font-serif text-xl mt-3">{c.t}</div>
                 <div className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{c.d}</div>
               </Card>

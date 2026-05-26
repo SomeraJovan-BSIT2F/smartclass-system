@@ -1,4 +1,3 @@
-// src/lib/api.js — fetches the real backend
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
 
 const TOKEN_KEY = 'smartclass.token';
@@ -83,6 +82,15 @@ export const api = {
     request(`/sections/${sectionId}/enrollments`, {
       method: 'POST', body: { studentId },
     }),
+  listTeachers: () => request('/sections/teachers'),
+  listStudents: () => request('/sections/students'),
+  listSemesters: () => request('/sections/semesters'),
+  createSemester: (data) =>
+    request('/sections/semesters', { method: 'POST', body: data }),
+  archiveSemester: (id) =>
+    request(`/sections/semesters/${id}/archive`, { method: 'PATCH' }),
+  unarchiveSemester: (id) =>
+    request(`/sections/semesters/${id}/unarchive`, { method: 'PATCH' }),
 
   // QR
   myQr: () => request('/qr/me'),
@@ -94,6 +102,17 @@ export const api = {
     }),
   resolveQr: (token) =>
     request('/qr/resolve', { method: 'POST', body: { token } }),
+  listAllQrs: (q = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(q).forEach(([k, v]) => { if (v) params.set(k, v); });
+    return request(`/qr?${params}`);
+  },
+  revokeQr: (id) =>
+    request(`/qr/${id}/revoke`, { method: 'PATCH' }),
+  restoreQr: (id) =>
+    request(`/qr/${id}/restore`, { method: 'PATCH' }),
+  bulkRevokeQrs: (data) =>
+    request('/qr/bulk-revoke', { method: 'POST', body: data }),
 
   // Attendance
   openSession: (sectionId) =>
@@ -110,10 +129,64 @@ export const api = {
     request(`/grades/items?sectionId=${sectionId}`),
   createGradeItem: (data) =>
     request('/grades/items', { method: 'POST', body: data }),
+  deleteGradeItem: (id) =>
+    request(`/grades/items/${id}`, { method: 'DELETE' }),
   recordGrade: (data) => request('/grades', { method: 'POST', body: data }),
   myGrades: () => request('/grades/me'),
+    myTasks: () => request('/grades/me/tasks'),
+  taskDetail: (itemId) => request(`/grades/me/tasks/${itemId}`),
+  submitTask: (itemId, formData) =>
+    request(`/grades/items/${itemId}/submit`,
+      { method: 'POST', body: formData, isForm: true }),
+  mySubmission: (itemId) =>
+    request(`/grades/items/${itemId}/submission/me`),
+  listSubmissions: (itemId) =>
+    request(`/grades/items/${itemId}/submissions`),
+  submissionDownloadUrl: (subId) =>
+    `${BASE_URL}/grades/submissions/${subId}/file`,
   classRoster: (sectionId) =>
     request(`/grades/sections/${sectionId}/roster`),
+  gradeGrid: (sectionId) =>
+    request(`/grades/sections/${sectionId}/grid`),
+  recitationCall: (sectionId, mode = 'fair') =>
+    request(`/grades/sections/${sectionId}/recitation?mode=${mode}`,
+      { method: 'POST' }),
+  recitationHistory: (sectionId) =>
+    request(`/grades/sections/${sectionId}/recitation/history`),
+  generateGroups: (sectionId, count = 4, mode = 'random') =>
+    request(`/grades/sections/${sectionId}/groups?count=${count}&mode=${mode}`),
+  attendanceTrend: (sectionId, period = 'daily') =>
+    request(`/grades/sections/${sectionId}/trend?period=${period}`),
+
+  // Attendance grid
+  attendanceGrid: (sectionId, from, to) => {
+    const q = new URLSearchParams();
+    if (from) q.set('from', from);
+    if (to) q.set('to', to);
+    return request(`/attendance/sections/${sectionId}/grid?${q}`);
+  },
+
+  // Quiz API
+  listQuizQuestions: (itemId) =>
+    request(`/grades/items/${itemId}/questions`),
+  upsertQuizQuestion: (itemId, data) =>
+    request(`/grades/items/${itemId}/questions`, { method: 'POST', body: data }),
+  deleteQuizQuestion: (itemId, qId) =>
+    request(`/grades/items/${itemId}/questions/${qId}`, { method: 'DELETE' }),
+  takeQuiz: (itemId) =>
+    request(`/grades/items/${itemId}/quiz`),
+  submitQuiz: (itemId, answers) =>
+    request(`/grades/items/${itemId}/quiz/submit`,
+      { method: 'POST', body: { answers } }),
+  myQuizResults: (itemId) =>
+    request(`/grades/items/${itemId}/quiz/results`),
+  listQuizSubmissions: (itemId) =>
+    request(`/grades/items/${itemId}/quiz/submissions`),
+  getQuizSubmission: (itemId, studentId) =>
+    request(`/grades/items/${itemId}/quiz/submissions/${studentId}`),
+  gradeEssay: (itemId, answerId, awardedPoints) =>
+    request(`/grades/items/${itemId}/quiz/answers/${answerId}/grade`,
+      { method: 'PATCH', body: { awardedPoints } }),
 
   // Excuse letters
   listExcuses: (q = {}) => request(`/excuse-letters?${new URLSearchParams(q)}`),
@@ -134,11 +207,20 @@ export const api = {
   // Analytics
   institutionStats: () => request('/analytics/institution'),
   sectionStats: (sectionId) => request(`/analytics/sections/${sectionId}`),
+  atRiskStudents: (sectionId) => {
+    const q = sectionId ? `?sectionId=${sectionId}` : '';
+    return request(`/analytics/at-risk${q}`);
+  },
+  classRanking: (sectionId) =>
+    request(`/analytics/sections/${sectionId}/ranking`),
+  engagementMetrics: (sectionId) =>
+    request(`/analytics/sections/${sectionId}/engagement`),
 
   // Reports
   attendancePdfUrl: (sectionId) =>
     `${BASE_URL}/reports/attendance/sections/${sectionId}.pdf`,
   myPerformancePdfUrl: () => `${BASE_URL}/reports/performance/me.pdf`,
+  institutionPdfUrl: () => `${BASE_URL}/reports/institution.pdf`,
 
   async downloadPdf(url, filename = 'report.pdf') {
     const res = await fetch(url, {

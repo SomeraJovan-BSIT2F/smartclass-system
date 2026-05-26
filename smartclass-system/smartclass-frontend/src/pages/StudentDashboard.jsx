@@ -1,4 +1,3 @@
-// src/pages/StudentDashboard.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -62,7 +61,7 @@ export default function StudentDashboard() {
       <SectionHeader
         eyebrow={`Student · ${user?.name}`}
         title={`Hello, ${user?.name?.split(' ')[0] || 'there'}.`}
-        sub="Your live attendance, grades, and semester QR — all in one place."
+        sub="Your attendance, grades, and QR code."
       />
 
       {error && <ErrorBanner onClose={() => setError(null)}>{error}</ErrorBanner>}

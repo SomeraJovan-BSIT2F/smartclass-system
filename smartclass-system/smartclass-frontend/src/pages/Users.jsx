@@ -1,4 +1,3 @@
-// src/pages/Users.jsx — admin user management
 import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { api } from '../lib/api';
@@ -39,9 +38,8 @@ export default function Users() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        eyebrow="User management"
-        title="Teachers & students"
-        sub="Add new accounts, archive inactive ones, and assign roles."
+                title="Teachers & students"
+        sub="Add and manage user accounts."
         action={
           <Button variant="accent" onClick={() => setShowForm(true)}>
             <Plus size={14} /> New user

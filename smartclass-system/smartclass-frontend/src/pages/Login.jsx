@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QrCode, ChevronRight } from 'lucide-react';
@@ -16,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     try {
-      const user = await login(email, password);
+      await login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message);
@@ -56,49 +55,38 @@ export default function Login() {
             >
               <QrCode size={18} />
             </div>
-            <div>
-              <div className="font-serif text-xl">
-                SmartClass <span style={{ color: 'var(--accent)' }}>QR</span>
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.18em] opacity-60">
-                Classroom Intelligence
-              </div>
+            <div className="font-serif text-xl">
+              SmartClass <span style={{ color: 'var(--accent)' }}>QR</span>
             </div>
           </div>
 
           <div>
-            <div className="text-[11px] uppercase tracking-[0.18em] opacity-60">
-              Volume I · Edition 2025
-            </div>
-            <h1 className="font-serif text-5xl xl:text-6xl mt-3 leading-[1.05]">
-              The end of the<br />
-              <em>paper roster</em>.
+            <h1 className="font-serif text-5xl xl:text-6xl leading-[1.05]">
+              QR-based<br />
+              classroom attendance.
             </h1>
             <p className="text-base opacity-70 mt-5 max-w-md leading-relaxed">
-              An intelligent, accessible classroom management platform — built for the way modern educators actually work.
+              A capstone project for managing class attendance, grades, and excuse letters.
             </p>
           </div>
 
           <div className="text-[11px] opacity-50 uppercase tracking-[0.14em]">
-            © Academic Year 2025–2026
+            Academic Year 2025–2026
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-center p-6 lg:p-12">
         <form onSubmit={submit} className="w-full max-w-sm">
-          <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--accent)' }}>
-            Sign in
-          </div>
-          <h2 className="font-serif text-3xl mt-2">Welcome back.</h2>
+          <h2 className="font-serif text-3xl">Sign in</h2>
           <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>
-            Enter the credentials issued by your institution.
+            Use the account given to you by the admin.
           </p>
 
           <div className="mt-7 space-y-4">
             {error && <ErrorBanner onClose={() => setError(null)}>{error}</ErrorBanner>}
 
-            <Field label="Institution email">
+            <Field label="Email">
               <Input
                 type="email"
                 value={email}
@@ -106,7 +94,7 @@ export default function Login() {
                 required
                 autoComplete="email"
                 autoFocus
-                placeholder="name@university.edu"
+                placeholder="name@school.edu"
               />
             </Field>
             <Field label="Password">
@@ -124,15 +112,11 @@ export default function Login() {
               Continue <ChevronRight size={14} />
             </Button>
 
-            <div className="text-center text-xs" style={{ color: 'var(--muted)' }}>
-              Secured with JWT authentication
-            </div>
-
             <div
               className="mt-6 p-3 rounded-xl border text-xs"
               style={{ background: 'var(--cream)', borderColor: 'var(--rule)' }}
             >
-              <div className="font-semibold mb-1.5">Demo accounts (password: Password123!)</div>
+              <div className="font-semibold mb-1.5">Test accounts (password: Password123!)</div>
               <ul className="space-y-1" style={{ color: 'var(--muted)' }}>
                 <li><strong>Admin:</strong> admin@smartclass.edu</li>
                 <li><strong>Teacher:</strong> almonte@smartclass.edu</li>

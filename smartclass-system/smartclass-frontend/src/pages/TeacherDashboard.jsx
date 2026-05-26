@@ -1,4 +1,3 @@
-// src/pages/TeacherDashboard.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -54,7 +53,7 @@ export default function TeacherDashboard() {
     return (
       <Empty
         title="No sections assigned yet"
-        sub="Ask your administrator to assign you to a section."
+        sub="No sections assigned. Contact the admin."
       />
     );
   }
@@ -93,10 +92,10 @@ export default function TeacherDashboard() {
           <div className="relative">
             <Pill tone="accent">Live class</Pill>
             <h2 className="font-serif text-3xl lg:text-4xl mt-3 leading-tight">
-              Begin attendance scan
+              Start attendance scan
             </h2>
             <p className="text-sm mt-2 opacity-80 max-w-md">
-              Open the scanner and let students tap their semester QR. Each scan is timestamped, deduplicated, and synced to the gradebook.
+              Open the scanner and scan each student's QR code to mark them present.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link to={`/scanner?section=${activeSection?.id}`}>
@@ -104,12 +103,16 @@ export default function TeacherDashboard() {
                   <Camera size={14} /> Open scanner
                 </Button>
               </Link>
-              <Button variant="ghost" className="!border-white/30 !text-white hover:!bg-white/10">
-                <Shuffle size={14} /> Random recitation
-              </Button>
-              <Button variant="ghost" className="!border-white/30 !text-white hover:!bg-white/10">
-                <Layers size={14} /> Group generator
-              </Button>
+              <Link to="/recitation">
+                <Button variant="ghost" className="!border-white/30 !text-white hover:!bg-white/10">
+                  <Shuffle size={14} /> Random recitation
+                </Button>
+              </Link>
+              <Link to="/groups">
+                <Button variant="ghost" className="!border-white/30 !text-white hover:!bg-white/10">
+                  <Layers size={14} /> Group generator
+                </Button>
+              </Link>
             </div>
           </div>
         </Card>

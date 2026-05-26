@@ -1,4 +1,3 @@
-// src/pages/Settings.jsx
 import { useState } from 'react';
 import { api } from '../lib/api';
 import {
@@ -35,9 +34,8 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        eyebrow="Account"
-        title="Settings"
-        sub="Manage your profile and security."
+                title="Settings"
+        sub="Account and password settings."
       />
 
       {error && <ErrorBanner onClose={() => setError(null)}>{error}</ErrorBanner>}

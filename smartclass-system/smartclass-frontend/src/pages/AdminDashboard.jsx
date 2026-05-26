@@ -1,4 +1,3 @@
-// src/pages/AdminDashboard.jsx
 import { useEffect, useState } from 'react';
 import {
   GraduationCap, Users, CheckCircle2, AlertTriangle, Plus, ChevronRight,
@@ -40,9 +39,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        eyebrow="Institution overview"
-        title={`Good day, ${user?.name?.split(' ')[0] || 'Admin'}.`}
-        sub="Live snapshot across every section, teacher, and student in the system."
+                title={`Good day, ${user?.name?.split(' ')[0] || 'Admin'}.`}
+        sub="Overview of the whole system."
       />
 
       {error && <ErrorBanner onClose={() => setError(null)}>{error}</ErrorBanner>}

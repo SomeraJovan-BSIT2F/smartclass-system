@@ -1,4 +1,3 @@
-// src/pages/Excuses.jsx — submit (student) and review (teacher/admin)
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Upload, FileText, Clock, X } from 'lucide-react';
 import { api } from '../lib/api';
@@ -49,9 +48,8 @@ function StudentExcuses() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        eyebrow="Student services"
-        title="Excuse letters"
-        sub="Submit a new letter or track the status of past submissions."
+                title="Excuse letters"
+        sub="Submit excuse letters and see their status."
         action={<Button variant="accent" onClick={() => setShowForm(true)}>+ New letter</Button>}
       />
 
@@ -170,9 +168,8 @@ function TeacherExcuses() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        eyebrow="Excuse letters"
-        title="Review submissions"
-        sub="Approve or reject excuse letters from your students."
+                title="Review submissions"
+        sub="Review excuse letters from students."
         action={
           <Select value={filter} onChange={(e) => setFilter(e.target.value)} className="!w-auto">
             <option value="">All</option>
