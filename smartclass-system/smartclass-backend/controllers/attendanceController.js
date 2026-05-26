@@ -17,7 +17,10 @@ async function openSession(req, res) {
     if (!own[0]) throw new HttpError(403, 'Not your section');
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Local date (YYYY-MM-DD) — uses server's timezone, not UTC.
+  // Using toISOString() would return UTC and shift the date by ±1 day.
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const [exist] = await pool.query(
     `SELECT * FROM class_sessions
      WHERE section_id = ? AND session_date = ?`,
@@ -25,7 +28,6 @@ async function openSession(req, res) {
   );
   if (exist[0]) return res.json({ session: exist[0], created: false });
 
-  const now = new Date();
   const [r] = await pool.query(
     `INSERT INTO class_sessions (section_id, session_date, started_at)
      VALUES (?,?,?)`,
@@ -102,14 +104,26 @@ async function recordScan(req, res) {
 
   // Notification to student
   const [stu] = await pool.query(
-    'SELECT user_id FROM students WHERE id = ?', [resolvedStudentId]
+    `SELECT s.user_id, sec.code AS section_code, sec.subject
+     FROM students s
+     JOIN class_sessions cs ON cs.id = ?
+     JOIN sections sec ON sec.id = cs.section_id
+     WHERE s.id = ?`,
+    [sessionId, resolvedStudentId]
   );
   if (stu[0]) {
+    const timeStr = new Date().toLocaleTimeString([], {
+      hour: '2-digit', minute: '2-digit',
+    });
     await pool.query(
       `INSERT INTO notifications (user_id, type, title, body)
        VALUES (?,?,?,?)`,
-      [stu[0].user_id, 'attendance', 'Attendance recorded',
-       `Marked ${status} at ${new Date().toLocaleTimeString()}`]
+      [
+        stu[0].user_id,
+        'attendance',
+        `Marked ${status} — ${stu[0].subject}`,
+        `Your attendance was recorded for ${stu[0].section_code} (${stu[0].subject}) at ${timeStr}.`,
+      ]
     );
   }
 
@@ -159,6 +173,52 @@ async function myHistory(req, res) {
   });
 }
 
+// Wide attendance grid: students × sessions over a date range
+async function attendanceGrid(req, res) {
+  const { sectionId } = req.params;
+  const { from, to } = req.query;
+
+  // Default range: last 30 days
+  const toDate = to || new Date().toISOString().slice(0, 10);
+  const fromDate = from || new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+
+  const [sessions] = await pool.query(
+    `SELECT id, session_date, status
+     FROM class_sessions
+     WHERE section_id = ? AND session_date BETWEEN ? AND ?
+     ORDER BY session_date ASC`,
+    [sectionId, fromDate, toDate]
+  );
+
+  const [students] = await pool.query(
+    `SELECT s.id, s.student_number,
+            CONCAT(u.first_name,' ',u.last_name) AS name
+     FROM enrollments e
+     JOIN students s ON s.id = e.student_id
+     JOIN users u    ON u.id = s.user_id
+     WHERE e.section_id = ? AND e.status='enrolled'
+     ORDER BY u.last_name, u.first_name`,
+    [sectionId]
+  );
+
+  const [marks] = await pool.query(
+    `SELECT a.session_id, a.student_id, a.status
+     FROM attendance a
+     JOIN class_sessions cs ON cs.id = a.session_id
+     WHERE cs.section_id = ? AND cs.session_date BETWEEN ? AND ?`,
+    [sectionId, fromDate, toDate]
+  );
+
+  // Lookup table
+  const grid = {};
+  for (const m of marks) {
+    grid[`${m.student_id}-${m.session_id}`] = m.status;
+  }
+
+  res.json({ sessions, students, grid, from: fromDate, to: toDate });
+}
+
 module.exports = {
   openSession, closeSession, recordScan, listForSession, myHistory,
+  attendanceGrid,
 };

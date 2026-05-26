@@ -1,4 +1,3 @@
-// controllers/qrController.js — QR generation and lookup
 const crypto = require('crypto');
 const QRCode = require('qrcode');
 const { pool } = require('../config/db');
@@ -122,4 +121,116 @@ async function resolveToken(req, res) {
   res.json({ student: rows[0] });
 }
 
-module.exports = { issueForStudent, issueBatchForSection, myQrImage, resolveToken };
+// List all QR codes (admin) — with filters
+async function listAllQrs(req, res) {
+  const { semesterId, status, q } = req.query;
+  const conditions = [];
+  const params = [];
+
+  if (semesterId) {
+    conditions.push('qr.semester_id = ?');
+    params.push(semesterId);
+  }
+  if (status === 'active') {
+    conditions.push('qr.revoked = FALSE AND qr.expires_at > NOW()');
+  } else if (status === 'expired') {
+    conditions.push('qr.expires_at < NOW()');
+  } else if (status === 'revoked') {
+    conditions.push('qr.revoked = TRUE');
+  }
+  if (q) {
+    conditions.push(
+      `(s.student_number LIKE ? OR
+        u.first_name LIKE ? OR
+        u.last_name LIKE ? OR
+        u.email LIKE ?)`
+    );
+    const pat = `%${q}%`;
+    params.push(pat, pat, pat, pat);
+  }
+
+  const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+
+  const [rows] = await pool.query(
+    `SELECT qr.id, qr.token, qr.expires_at, qr.revoked, qr.issued_at,
+            qr.semester_id,
+            s.id AS student_id, s.student_number,
+            CONCAT(u.first_name, ' ', u.last_name) AS student_name,
+            u.email,
+            sem.label AS semester_label,
+            (SELECT COUNT(*) FROM attendance a
+             WHERE a.student_id = s.id) AS scan_count
+     FROM qr_codes qr
+     JOIN students s   ON s.id = qr.student_id
+     JOIN users u      ON u.id = s.user_id
+     JOIN semesters sem ON sem.id = qr.semester_id
+     ${where}
+     ORDER BY qr.issued_at DESC
+     LIMIT 500`,
+    params
+  );
+
+  const summary = {
+    total: rows.length,
+    active: rows.filter(r => !r.revoked && new Date(r.expires_at) > new Date()).length,
+    expired: rows.filter(r => new Date(r.expires_at) < new Date()).length,
+    revoked: rows.filter(r => r.revoked).length,
+  };
+
+  res.json({ qrCodes: rows, summary });
+}
+
+// Revoke a single QR code
+async function revokeQr(req, res) {
+  const { id } = req.params;
+  const [r] = await pool.query(
+    `UPDATE qr_codes SET revoked = TRUE WHERE id = ?`,
+    [id]
+  );
+  if (r.affectedRows === 0) throw new HttpError(404, 'QR code not found');
+  res.json({ ok: true });
+}
+
+// Restore a revoked QR (only if not expired)
+async function restoreQr(req, res) {
+  const { id } = req.params;
+  const [rows] = await pool.query(
+    `SELECT expires_at FROM qr_codes WHERE id = ?`,
+    [id]
+  );
+  if (!rows[0]) throw new HttpError(404, 'QR code not found');
+  if (new Date(rows[0].expires_at) < new Date()) {
+    throw new HttpError(400, 'Cannot restore an expired QR. Issue a new one instead.');
+  }
+  await pool.query(
+    `UPDATE qr_codes SET revoked = FALSE WHERE id = ?`,
+    [id]
+  );
+  res.json({ ok: true });
+}
+
+// Bulk revoke (by semester or filter)
+async function bulkRevokeQrs(req, res) {
+  const { semesterId, qrIds } = req.body;
+  let result;
+  if (qrIds && Array.isArray(qrIds) && qrIds.length > 0) {
+    const placeholders = qrIds.map(() => '?').join(',');
+    [result] = await pool.query(
+      `UPDATE qr_codes SET revoked = TRUE WHERE id IN (${placeholders})`,
+      qrIds
+    );
+  } else if (semesterId) {
+    [result] = await pool.query(
+      `UPDATE qr_codes SET revoked = TRUE WHERE semester_id = ? AND revoked = FALSE`,
+      [semesterId]
+    );
+  } else {
+    throw new HttpError(400, 'Provide either semesterId or qrIds');
+  }
+  res.json({ ok: true, revoked: result.affectedRows });
+}
+
+module.exports = {
+  issueForStudent, issueBatchForSection, myQrImage, resolveToken,
+  listAllQrs, revokeQr, restoreQr, bulkRevokeQrs,
+};

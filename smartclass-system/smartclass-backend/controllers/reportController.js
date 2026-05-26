@@ -1,4 +1,3 @@
-// controllers/reportController.js — PDF report endpoints
 const { pool } = require('../config/db');
 const { HttpError } = require('../middleware/error');
 const { attendanceReport, studentPerformanceReport } = require('../utils/pdf');
@@ -101,4 +100,153 @@ async function myPerformancePdf(req, res) {
   await studentPerformanceReport(res, { student, grades, attendance });
 }
 
-module.exports = { attendancePdf, myPerformancePdf };
+// Institution-wide aggregate report (admin only)
+async function institutionPdf(req, res) {
+  const PDFDocument = require('pdfkit');
+
+  // Aggregate data
+  const [[userStats]] = await pool.query(
+    `SELECT
+       SUM(role='student') AS students,
+       SUM(role='teacher') AS teachers,
+       SUM(role='admin')   AS admins
+     FROM users WHERE status='active'`
+  );
+
+  const [[secStats]] = await pool.query(
+    `SELECT
+       COUNT(*) AS total,
+       SUM(status='active') AS active,
+       SUM(status='archived') AS archived
+     FROM sections`
+  );
+
+  const [[attStats]] = await pool.query(
+    `SELECT
+       ROUND(SUM(a.status IN ('present','late')) * 100.0 /
+             NULLIF(COUNT(*),0), 1) AS attendance_pct,
+       COUNT(*) AS total_records
+     FROM attendance a`
+  );
+
+  const [perSection] = await pool.query(
+    `SELECT s.code, s.subject,
+            CONCAT(u.first_name,' ',u.last_name) AS teacher,
+            (SELECT COUNT(*) FROM enrollments e
+              WHERE e.section_id = s.id AND e.status='enrolled') AS students,
+            (SELECT ROUND(SUM(a.status IN ('present','late')) * 100.0 /
+                          NULLIF(COUNT(*),0), 1)
+             FROM attendance a
+             JOIN class_sessions cs ON cs.id = a.session_id
+             WHERE cs.section_id = s.id) AS attendance_pct,
+            s.status
+     FROM sections s
+     JOIN teachers t ON t.id = s.teacher_id
+     JOIN users u    ON u.id = t.user_id
+     ORDER BY s.status, s.code`
+  );
+
+  // Stream PDF
+  const doc = new PDFDocument({ size: 'A4', margin: 50 });
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition',
+    `inline; filename="institution-report-${new Date().toISOString().slice(0, 10)}.pdf"`);
+  doc.pipe(res);
+
+  // Header
+  doc.font('Helvetica-Bold').fontSize(22).text('SmartClass QR', 50, 50);
+  doc.font('Helvetica').fontSize(10).fillColor('#666')
+    .text('Institution-wide Report', 50, 78);
+  doc.fillColor('#000')
+    .fontSize(9)
+    .text(`Generated ${new Date().toLocaleString()}`, 50, 92);
+  doc.moveTo(50, 115).lineTo(545, 115).stroke('#ccc');
+
+  let y = 140;
+
+  // Section: People
+  doc.font('Helvetica-Bold').fontSize(14).text('People', 50, y);
+  y += 25;
+  const peopleData = [
+    ['Active students', userStats.students || 0],
+    ['Active teachers', userStats.teachers || 0],
+    ['Active admins',   userStats.admins || 0],
+  ];
+  doc.font('Helvetica').fontSize(11);
+  for (const [k, v] of peopleData) {
+    doc.fillColor('#666').text(k, 70, y);
+    doc.fillColor('#000').text(String(v), 250, y);
+    y += 18;
+  }
+
+  y += 15;
+
+  // Section: Sections
+  doc.font('Helvetica-Bold').fontSize(14).fillColor('#000').text('Sections', 50, y);
+  y += 25;
+  const secData = [
+    ['Total sections',    secStats.total || 0],
+    ['Active sections',   secStats.active || 0],
+    ['Archived sections', secStats.archived || 0],
+  ];
+  doc.font('Helvetica').fontSize(11);
+  for (const [k, v] of secData) {
+    doc.fillColor('#666').text(k, 70, y);
+    doc.fillColor('#000').text(String(v), 250, y);
+    y += 18;
+  }
+
+  y += 15;
+
+  // Section: Attendance
+  doc.font('Helvetica-Bold').fontSize(14).fillColor('#000').text('Attendance', 50, y);
+  y += 25;
+  doc.font('Helvetica').fontSize(11)
+    .fillColor('#666').text('Overall percentage', 70, y);
+  doc.fillColor('#000').text(`${attStats.attendance_pct || 0}%`, 250, y);
+  y += 18;
+  doc.fillColor('#666').text('Total records', 70, y);
+  doc.fillColor('#000').text(String(attStats.total_records || 0), 250, y);
+  y += 30;
+
+  // Per-section table
+  doc.font('Helvetica-Bold').fontSize(14).text('Per-section breakdown', 50, y);
+  y += 20;
+
+  // Table header
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#666');
+  doc.text('CODE',     50, y);
+  doc.text('SUBJECT',  120, y);
+  doc.text('TEACHER',  280, y);
+  doc.text('STUDENTS', 400, y);
+  doc.text('ATTND',    450, y);
+  doc.text('STATUS',   500, y);
+  y += 14;
+  doc.moveTo(50, y - 2).lineTo(545, y - 2).stroke('#ccc');
+  y += 4;
+
+  doc.font('Helvetica').fontSize(9).fillColor('#000');
+  for (const row of perSection) {
+    if (y > 770) {
+      doc.addPage();
+      y = 50;
+    }
+    doc.text(row.code || '—', 50, y, { width: 65, ellipsis: true });
+    doc.text(row.subject || '—', 120, y, { width: 155, ellipsis: true });
+    doc.text(row.teacher || '—', 280, y, { width: 115, ellipsis: true });
+    doc.text(String(row.students || 0), 400, y);
+    doc.text(row.attendance_pct != null ? `${row.attendance_pct}%` : '—', 450, y);
+    doc.fillColor(row.status === 'active' ? '#3B7A57' : '#888')
+      .text(row.status, 500, y);
+    doc.fillColor('#000');
+    y += 16;
+  }
+
+  // Footer
+  doc.font('Helvetica').fontSize(8).fillColor('#888')
+    .text('SmartClass QR · Institution Report', 50, 800, { align: 'center', width: 495 });
+
+  doc.end();
+}
+
+module.exports = { attendancePdf, myPerformancePdf, institutionPdf };

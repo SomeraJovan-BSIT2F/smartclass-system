@@ -1,4 +1,3 @@
-// controllers/notificationController.js
 const { pool } = require('../config/db');
 
 async function list(req, res) {

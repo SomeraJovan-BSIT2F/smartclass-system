@@ -1,4 +1,3 @@
-// middleware/error.js — central error handling
 
 class HttpError extends Error {
   constructor(status, message, details = null) {

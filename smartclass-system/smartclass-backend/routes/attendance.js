@@ -1,4 +1,3 @@
-// routes/attendance.js
 const router = require('express').Router();
 const { body } = require('express-validator');
 const { authenticate, authorize } = require('../middleware/auth');
@@ -30,5 +29,9 @@ router.get('/sessions/:id', authorize('teacher','admin'),
 
 // Student: own attendance history with summary
 router.get('/me', authorize('student'), asyncHandler(ctl.myHistory));
+
+// Teacher: full attendance grid for a section (date range)
+router.get('/sections/:sectionId/grid', authorize('teacher','admin'),
+  asyncHandler(ctl.attendanceGrid));
 
 module.exports = router;

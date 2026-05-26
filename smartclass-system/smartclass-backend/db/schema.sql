@@ -223,3 +223,18 @@ CREATE TABLE IF NOT EXISTS audit_log (
   INDEX idx_audit_user (user_id),
   INDEX idx_audit_created (created_at)
 ) ENGINE=InnoDB;
+
+-- Recitation calls (random student picker history)
+CREATE TABLE IF NOT EXISTS recitation_calls (
+  id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  section_id      INT UNSIGNED NOT NULL,
+  student_id      INT UNSIGNED NOT NULL,
+  called_by       INT UNSIGNED NOT NULL,
+  called_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  notes           VARCHAR(255),
+  CONSTRAINT fk_rc_section FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rc_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rc_caller  FOREIGN KEY (called_by)  REFERENCES users(id),
+  INDEX idx_rc_section (section_id, called_at),
+  INDEX idx_rc_student (student_id)
+) ENGINE=InnoDB;

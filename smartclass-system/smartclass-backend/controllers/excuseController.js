@@ -1,4 +1,3 @@
-// controllers/excuseController.js
 const path = require('path');
 const fs = require('fs');
 const { pool } = require('../config/db');
@@ -84,16 +83,24 @@ async function review(req, res) {
 
   // Notify the student
   const [row] = await pool.query(
-    `SELECT s.user_id, e.absence_date FROM excuse_letters e
-     JOIN students s ON s.id = e.student_id WHERE e.id = ?`,
+    `SELECT s.user_id, e.absence_date, sec.code AS section_code, sec.subject
+     FROM excuse_letters e
+     JOIN students s   ON s.id = e.student_id
+     JOIN sections sec ON sec.id = e.section_id
+     WHERE e.id = ?`,
     [id]
   );
   if (row[0]) {
+    const dateStr = new Date(row[0].absence_date).toLocaleDateString();
     await pool.query(
       `INSERT INTO notifications (user_id, type, title, body)
        VALUES (?,?,?,?)`,
-      [row[0].user_id, 'excuse', `Excuse letter ${status}`,
-       `For ${row[0].absence_date}`]
+      [
+        row[0].user_id,
+        'excuse',
+        `Excuse letter ${status}`,
+        `Your excuse letter for ${row[0].subject} (${row[0].section_code}) on ${dateStr} was ${status}.${reviewNotes ? ' Note: ' + reviewNotes : ''}`,
+      ]
     );
   }
 

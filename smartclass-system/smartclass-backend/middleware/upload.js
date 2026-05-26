@@ -1,4 +1,3 @@
-// middleware/upload.js — secure file upload (excuse letter attachments)
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');

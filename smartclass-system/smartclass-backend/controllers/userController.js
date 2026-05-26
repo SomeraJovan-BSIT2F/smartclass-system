@@ -1,4 +1,3 @@
-// controllers/userController.js — admin user management
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../config/db');

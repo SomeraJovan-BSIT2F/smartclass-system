@@ -1,4 +1,3 @@
-// middleware/auth.js — JWT verification + role-based access control
 const jwt = require('jsonwebtoken');
 
 function authenticate(req, res, next) {

@@ -1,4 +1,3 @@
-// controllers/sectionController.js
 const { pool } = require('../config/db');
 const { HttpError } = require('../middleware/error');
 
@@ -71,6 +70,124 @@ async function createSection(req, res) {
   res.status(201).json({ id: r.insertId });
 }
 
+// List all teachers (id + display name) — for picking in section forms
+async function listTeachers(req, res) {
+  const [rows] = await pool.query(
+    `SELECT t.id,
+            CONCAT(u.first_name,' ',u.last_name) AS name,
+            u.email,
+            t.employee_number,
+            t.department
+     FROM teachers t
+     JOIN users u ON u.id = t.user_id
+     WHERE u.status = 'active'
+     ORDER BY u.last_name, u.first_name`
+  );
+  res.json({ teachers: rows });
+}
+
+// List all students — for enrolling into sections
+async function listStudents(req, res) {
+  const [rows] = await pool.query(
+    `SELECT s.id,
+            s.student_number,
+            CONCAT(u.first_name,' ',u.last_name) AS name,
+            u.email,
+            s.program,
+            s.year_level
+     FROM students s
+     JOIN users u ON u.id = s.user_id
+     WHERE u.status = 'active'
+     ORDER BY u.last_name, u.first_name`
+  );
+  res.json({ students: rows });
+}
+
+// List all semesters
+async function listSemesters(req, res) {
+  const [rows] = await pool.query(
+    `SELECT id, code, label, start_date, end_date, is_active
+     FROM semesters
+     ORDER BY start_date DESC`
+  );
+  res.json({ semesters: rows });
+}
+
+// Create a new semester
+async function createSemester(req, res) {
+  const { code, label, startDate, endDate, isActive } = req.body;
+  if (isActive) {
+    await pool.query(`UPDATE semesters SET is_active = 0`);
+  }
+  const [r] = await pool.query(
+    `INSERT INTO semesters (code, label, start_date, end_date, is_active)
+     VALUES (?,?,?,?,?)`,
+    [code, label, startDate, endDate, isActive ? 1 : 0]
+  );
+  res.status(201).json({ id: r.insertId });
+}
+
+// Archive a semester: close all its sections and revoke unused QRs
+async function archiveSemester(req, res) {
+  const { id } = req.params;
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Archive all sections in this semester
+    const [secRes] = await conn.query(
+      `UPDATE sections SET status = 'archived' WHERE semester_id = ?`,
+      [id]
+    );
+
+    // Revoke all QR codes for this semester
+    const [qrRes] = await conn.query(
+      `UPDATE qr_codes SET revoked = 1 WHERE semester_id = ?`,
+      [id]
+    );
+
+    // Close any still-open class sessions
+    const [sesRes] = await conn.query(
+      `UPDATE class_sessions cs
+       JOIN sections s ON s.id = cs.section_id
+       SET cs.status = 'closed'
+       WHERE s.semester_id = ? AND cs.status = 'open'`,
+      [id]
+    );
+
+    // Mark the semester inactive
+    await conn.query(
+      `UPDATE semesters SET is_active = 0 WHERE id = ?`,
+      [id]
+    );
+
+    await conn.commit();
+    res.json({
+      ok: true,
+      archived: {
+        sections: secRes.affectedRows,
+        qrCodes: qrRes.affectedRows,
+        sessions: sesRes.affectedRows,
+      },
+    });
+  } catch (e) {
+    await conn.rollback();
+    throw e;
+  } finally {
+    conn.release();
+  }
+}
+
+// Unarchive a semester (only flips section status back to active)
+async function unarchiveSemester(req, res) {
+  const { id } = req.params;
+  await pool.query(
+    `UPDATE sections SET status = 'active' WHERE semester_id = ?`,
+    [id]
+  );
+  res.json({ ok: true });
+}
+
 async function enrollStudent(req, res) {
   const { id } = req.params;
   const { studentId } = req.body;
@@ -89,4 +206,6 @@ async function archiveSection(req, res) {
 
 module.exports = {
   listSections, getSection, createSection, enrollStudent, archiveSection,
+  listTeachers, listStudents, listSemesters, createSemester,
+  archiveSemester, unarchiveSemester,
 };
